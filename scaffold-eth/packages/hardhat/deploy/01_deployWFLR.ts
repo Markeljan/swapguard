@@ -26,18 +26,6 @@ const deployContract: DeployFunction = async function (hre: HardhatRuntimeEnviro
     // automatically mining the contract deployment transaction. There is no effect on live networks.
     autoMine: true,
   });
-
-  // Get the deployed contract
-  const tokenContract = await hre.ethers.getContract(contractName, deployer);
-  const dexContract = await hre.ethers.getContract("MultiDEX", deployer);
-
-  // Mint 100,000 tokens
-  const mintAmount = hre.ethers.utils.parseUnits("100000", 18);
-  await tokenContract.mint(deployer, mintAmount);
-
-  // Approve MultiDEX to spend all tokens
-  await tokenContract.approve(dexContract.address, mintAmount);
-
 };
 
 export default deployContract;

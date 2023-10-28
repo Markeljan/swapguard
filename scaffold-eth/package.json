@@ -12,6 +12,7 @@
     "chain": "yarn workspace @se-2/hardhat chain",
     "compile": "yarn workspace @se-2/hardhat compile",
     "deploy": "yarn workspace @se-2/hardhat deploy",
+    "scripts": "yarn workspace @se-2/hardhat scripts",
     "fork": "yarn workspace @se-2/hardhat fork",
     "generate": "yarn workspace @se-2/hardhat generate",
     "hardhat:lint": "yarn workspace @se-2/hardhat lint",

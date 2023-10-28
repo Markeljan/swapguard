@@ -5,7 +5,7 @@ const contracts = {
       name: "coston2",
       contracts: {
         MultiDEX: {
-          address: "0xed7467544C4E6B1646b560c40e879f295b83B912",
+          address: "0x9636feB73C1f92D7524ba56B739bbd329fe74B24",
           abi: [
             {
               inputs: [],
@@ -245,7 +245,7 @@ const contracts = {
           ],
         },
         WETH: {
-          address: "0x5f1B337cf4a08C63C57335E9069b7f5F960d9D6F",
+          address: "0xE1842E54D5F2D6E230Ee09c68366F2cE395A8849",
           abi: [
             {
               inputs: [],
@@ -595,7 +595,7 @@ const contracts = {
           ],
         },
         WFLR: {
-          address: "0xaCD3BC6547844DfE51E32A6F74D818082729c9dA",
+          address: "0x1f25b15BEaA0a4eD13010E9c5d72eaB4f95Cc074",
           abi: [
             {
               inputs: [],
