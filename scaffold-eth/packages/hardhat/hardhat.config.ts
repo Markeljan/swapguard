@@ -31,6 +31,34 @@ task(TASK_COMPILE)
 
 
 const config: HardhatUserConfig = {
+  etherscan: {
+    customChains: [
+      {
+        network: "coston",
+        chainId: 16,
+        urls: {
+          apiURL: "https://coston-explorer.flare.network/api",
+          browserURL: "https://coston-explorer.flare.network"
+        }
+      },
+      {
+        network: "coston2",
+        chainId: 114,
+        urls: {
+          apiURL: "https://coston2-explorer.flare.network/api",
+          browserURL: "https://coston2-explorer.flare.network"
+        }
+      },
+      {
+        network: "flare",
+        chainId: 14,
+        urls: {
+          apiURL: "https://flare-explorer.flare.network/api",
+          browserURL: "https://flare-explorer.flare.network/",
+        }
+      }
+    ]
+  },
   solidity: {
     compilers: [
       {
@@ -81,21 +109,39 @@ const config: HardhatUserConfig = {
       url: "https://coston-api.flare.network/ext/bc/C/rpc",
       accounts: [deployerPrivateKey],
       chainId: 16,
-      verifyURL: "https://api.routescan.io/v2/network/testnet/evm/16/etherscan",
+      verifyURL: "https://coston-explorer.flare.network",
+      verify: {
+        etherscan: {
+          apiKey: `${etherscanApiKey}`,
+          apiUrl: "https://coston-explorer.flare.network",
+        }
+      }
     },
     coston2: {
       url: "https://coston2-api.flare.network/ext/bc/C/rpc",
       accounts: [deployerPrivateKey],
       chainId: 114,
-      verifyURL: "https://api.routescan.io/v2/network/testnet/evm/114/etherscan",
+      verifyURL: "https://coston2-explorer.flare.network",
+      verify: {
+        etherscan: {
+          apiKey: `${etherscanApiKey}`,
+          apiUrl: "https://coston2-explorer.flare.network",
+        }
+      }
     },
     flare: {
       url: "https://flare-api.flare.network/ext/C/rpc",
       accounts: [deployerPrivateKey],
       chainId: 14,
-      verifyURL: "https://api.routescan.io/v2/network/mainnet/evm/14/etherscan",
-    },
+      verifyURL: "https://flare-explorer.flare.network",
+      verify: {
+        etherscan: {
+          apiKey: `${etherscanApiKey}`,
+          apiUrl: "https://flare-explorer.flare.network",
+        }
+    }
   },
+},
   verify: {
     etherscan: {
       apiKey: `${etherscanApiKey}`,
