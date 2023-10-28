@@ -2,8 +2,13 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MultiDEX {
+/**
+ * @title MultiDEX
+ * @dev A multi-token decentralized exchange (DEX) contract.
+ */
+contract MultiDEX is Ownable {
     struct TokenInfo {
         address token;
         uint256 liquidity;
@@ -11,15 +16,8 @@ contract MultiDEX {
     
     mapping(address => TokenInfo) public tokenInfoMap;
     address[] public supportedTokens;
-    address public owner;
     
-    constructor() {
-        owner = msg.sender;
-    }
-    
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not the owner");
-        _;
+    constructor() Ownable() {
     }
     
     function addSupportedToken(address _token) public onlyOwner {
@@ -32,57 +30,61 @@ contract MultiDEX {
         return IERC20(_token).balanceOf(address(this));
     }
     
-    function addLiquidity(address _token, uint256 _amount) public payable returns (uint256) {
-        require(tokenInfoMap[_token].token != address(0), "Token not supported");
+    function addLiquidity(address _tokenA, address _tokenB, uint256 _amountA, uint256 _amountB) public {
+        require(tokenInfoMap[_tokenA].token != address(0) && tokenInfoMap[_tokenB].token != address(0), "Tokens not supported");
         
-        TokenInfo storage tokenInfo = tokenInfoMap[_token];
+        TokenInfo storage tokenInfoA = tokenInfoMap[_tokenA];
+        TokenInfo storage tokenInfoB = tokenInfoMap[_tokenB];
         
-        uint256 _liquidity;
-        uint256 balanceInEth = address(this).balance;
-        uint256 tokenReserve = getTokensInContract(_token);
-        IERC20 _tokenContract = IERC20(_token);
+        uint256 liquidityA;
+        uint256 liquidityB;
+        uint256 reserveA = getTokensInContract(_tokenA);
+        uint256 reserveB = getTokensInContract(_tokenB);
+        IERC20 tokenA = IERC20(_tokenA);
+        IERC20 tokenB = IERC20(_tokenB);
         
-        if (tokenReserve == 0) {
-            _tokenContract.transferFrom(msg.sender, address(this), _amount);
-            _liquidity = balanceInEth;
+        if (reserveA == 0 || reserveB == 0) {
+            tokenA.transferFrom(msg.sender, address(this), _amountA);
+            tokenB.transferFrom(msg.sender, address(this), _amountB);
+            liquidityA = _amountA;
+            liquidityB = _amountB;
         }
         else {
-            uint256 reservedEth = balanceInEth - msg.value;
             require(
-                _amount >= (msg.value * tokenReserve) / reservedEth,
+                _amountA >= (_amountB * reserveA) / reserveB && _amountB >= (_amountA * reserveB) / reserveA,
                 "Amount of tokens sent is less than the minimum tokens required"
             );
-            _tokenContract.transferFrom(msg.sender, address(this), _amount);
+            tokenA.transferFrom(msg.sender, address(this), _amountA);
+            tokenB.transferFrom(msg.sender, address(this), _amountB);
             unchecked {
-                _liquidity = (tokenInfo.liquidity * msg.value) / reservedEth;
+                liquidityA = (tokenInfoA.liquidity * _amountA) / reserveA;
+                liquidityB = (tokenInfoB.liquidity * _amountB) / reserveB;
             }
         }
         
-        tokenInfo.liquidity += _liquidity;
-        
-        return _liquidity;
+        tokenInfoA.liquidity += liquidityA;
+        tokenInfoB.liquidity += liquidityB;
     }
     
-    function removeLiquidity(address _token, uint256 _amount) public returns (uint256, uint256) {
+    function removeLiquidity(address _tokenA, address _tokenB, uint256 _liquidity) public {
         require(
-            _amount > 0, "Amount should be greater than zero"
+            _liquidity > 0, "Liquidity should be greater than zero"
         );
-        require(tokenInfoMap[_token].token != address(0), "Token not supported");
+        require(tokenInfoMap[_tokenA].token != address(0) && tokenInfoMap[_tokenB].token != address(0), "Tokens not supported");
         
-        TokenInfo storage tokenInfo = tokenInfoMap[_token];
+        TokenInfo storage tokenInfoA = tokenInfoMap[_tokenA];
+        TokenInfo storage tokenInfoB = tokenInfoMap[_tokenB];
         
-        uint256 _reservedEth = address(this).balance;
-        uint256 _totalLiquidity = tokenInfo.liquidity;
-
-        uint256 _ethAmount = (_reservedEth * _amount) / _totalLiquidity;
-        uint256 _tokenAmount = (getTokensInContract(_token) * _amount) / _totalLiquidity;
+        uint256 totalLiquidityA = tokenInfoA.liquidity;
+        uint256 totalLiquidityB = tokenInfoB.liquidity;
+        uint256 tokenAmountA = (getTokensInContract(_tokenA) * _liquidity) / totalLiquidityA;
+        uint256 tokenAmountB = (getTokensInContract(_tokenB) * _liquidity) / totalLiquidityB;
         
-        tokenInfo.liquidity -= _amount;
+        tokenInfoA.liquidity -= _liquidity;
+        tokenInfoB.liquidity -= _liquidity;
         
-        payable(msg.sender).transfer(_ethAmount);
-        IERC20(_token).transfer(msg.sender ,_tokenAmount);
-        
-        return (_ethAmount, _tokenAmount);
+        IERC20(_tokenA).transfer(msg.sender, tokenAmountA);
+        IERC20(_tokenB).transfer(msg.sender, tokenAmountB);
     }
     
     function getAmountOfTokens(
@@ -101,32 +103,17 @@ contract MultiDEX {
         }
     }
     
-    function swapEthTotoken(address _token) public payable {
-        require(tokenInfoMap[_token].token != address(0), "Token not supported");
+    function swapTokenToToken(address _tokenIn, address _tokenOut, uint256 _tokensSold) public {
+        require(tokenInfoMap[_tokenIn].token != address(0) && tokenInfoMap[_tokenOut].token != address(0), "Tokens not supported");
         
-        uint256 _reservedTokens = getTokensInContract(_token);
+        uint256 _reservedTokensIn = getTokensInContract(_tokenIn);
+        uint256 _reservedTokensOut = getTokensInContract(_tokenOut);
         uint256 _tokensBought = getAmountOfTokens(
-            msg.value, 
-            address(this).balance, 
-            _reservedTokens
+            _tokensSold, 
+            _reservedTokensIn, 
+            _reservedTokensOut
         );
-        IERC20(_token).transfer(msg.sender, _tokensBought);
-    }
-    
-    function swapTokenToEth(address _token, uint256 _tokensSold) public {
-        require(tokenInfoMap[_token].token != address(0), "Token not supported");
-        
-        uint256 _reservedTokens = getTokensInContract(_token);
-        uint256 ethBought = getAmountOfTokens(
-            _tokensSold,
-            _reservedTokens,
-            address(this).balance
-        );
-        IERC20(_token).transferFrom(
-            msg.sender, 
-            address(this), 
-            _tokensSold
-        );
-        payable(msg.sender).transfer(ethBought);
+        IERC20(_tokenIn).transferFrom(msg.sender, address(this), _tokensSold);
+        IERC20(_tokenOut).transfer(msg.sender, _tokensBought);
     }
 }

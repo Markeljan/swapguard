@@ -2,11 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract DEX is ERC20 {
+contract DEX is ERC20, Ownable {
     address public token;
 
-    constructor (address _token) ERC20( name(), symbol()) {
+    constructor (address _token) ERC20( name(), symbol()) Ownable() {
         token = _token;
     }
 
