@@ -1,0 +1,19 @@
+{
+  "name": "foundry",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@flarenetwork/flare-periphery-contracts": "^0.1.1",
+    "@openzeppelin/contracts": "4.9.2",
+    "@thirdweb-dev/contracts": "^3.10.3",
+    "ERC20Base.sol": "link:@thirdweb-dev/contracts/base/ERC20Base.sol",
+    "base": "link:@thirdweb-dev/contracts/base"
+  }
+}

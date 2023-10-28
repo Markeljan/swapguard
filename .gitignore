@@ -1,0 +1,7 @@
+
+foundry/.env
+foundry/node_modules
+foundry/out
+foundry/lib/forge-std
+foundry/cache
+foundry/broadcast
