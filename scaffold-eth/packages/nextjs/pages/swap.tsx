@@ -2,13 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import type { NextPage } from "next";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { useDeployedContractInfo, useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-import { createWalletClient, formatEther, formatUnits, http, parseUnits, publicActions } from "viem";
+import { formatUnits, parseUnits } from "viem";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import { USDCIcon, WETHIcon } from "~~/components/assets/Icons";
 import { InformationCircleIcon } from "@heroicons/react/20/solid";
 import { privateKeyToAccount } from "viem/accounts";
-import { useNetwork, useWaitForTransaction } from "wagmi";
 
 const Swap: NextPage = () => {
   const tokenNames = ["WETH", "USDC"];
@@ -20,7 +19,6 @@ const Swap: NextPage = () => {
   const usdcAddress = usdcData?.address;
   const { data: wethData } = useDeployedContractInfo("WETH");
   const wethAddress = wethData?.address;
-  const chain = useNetwork()
 
   const inputAddress = inputToken === "WETH" ? wethAddress : usdcAddress;
   const outputAddress = outputToken === "WETH" ? wethAddress : usdcAddress;
@@ -59,7 +57,7 @@ const Swap: NextPage = () => {
   }, [tokenPriceData, inputAmount, displayTokenAmount, inputToken, outputToken]);
   const [stopFrontRun, setStopFrontRun] = useState<boolean>(false);
 
-  let estimatedPrice = swapGuardEnabled === false ? BigInt(0) : BigInt(Number(tokenPrice).toFixed(0));
+  const estimatedPrice = swapGuardEnabled === false ? BigInt(0) : BigInt(Number(tokenPrice).toFixed(0));
 
   const swapTokens = useScaffoldContractWrite({
     contractName: "MultiDEX",
@@ -69,14 +67,6 @@ const Swap: NextPage = () => {
 
 
   const account = privateKeyToAccount(`0x${process.env.NEXT_PUBLIC_FRONTRUNNER_PK}`)
-
-  const client = createWalletClient({
-    account,
-    chain: chain?.chain,
-    transport: http(
-      `https://coston2-api.flare.network/ext/bc/C/rpc`
-    ),
-  })
 
   // call contract
   const manipulatePrice = useScaffoldContractWrite({
