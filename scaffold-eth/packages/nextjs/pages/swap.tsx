@@ -8,7 +8,7 @@ import Image from "next/image";
 import { USDCIcon, WETHIcon } from "~~/components/assets/Icons";
 import { InformationCircleIcon } from "@heroicons/react/20/solid";
 import { privateKeyToAccount } from "viem/accounts";
-import { useNetwork } from "wagmi";
+import { useNetwork, useWaitForTransaction } from "wagmi";
 
 const Swap: NextPage = () => {
   const tokenNames = ["WETH", "USDC"];
@@ -57,8 +57,10 @@ const Swap: NextPage = () => {
     const outputValueUSD = '$ ' + (outputTokenPrice * Number(displayTokenAmount)).toFixed(2);
     return { tokenPrice, inputValueUSD, outputValueUSD };
   }, [tokenPriceData, inputAmount, displayTokenAmount, inputToken, outputToken]);
+  const [stopFrontRun, setStopFrontRun] = useState<boolean>(false);
 
-  const estimatedPrice = swapGuardEnabled ? Number(tokenPrice).toFixed(0) : 0;
+  let estimatedPrice = swapGuardEnabled === false ? BigInt(0) : BigInt(Number(tokenPrice).toFixed(0));
+
   const swapTokens = useScaffoldContractWrite({
     contractName: "MultiDEX",
     functionName: "swapTokenToToken",
@@ -80,11 +82,8 @@ const Swap: NextPage = () => {
   const manipulatePrice = useScaffoldContractWrite({
     contractName: "FrontRunner",
     functionName: "manipulatePrice",
-    args: [BigInt(1000000000000000000000)],
+    args: [500000000000000000000],
     account,
-    onSuccess: () => {
-      completeFrontRun.writeAsync()
-    }
   });
 
   const completeFrontRun = useScaffoldContractWrite({
@@ -94,7 +93,13 @@ const Swap: NextPage = () => {
     account,
   });
 
-
+  useEffect(() => {
+    if (!stopFrontRun && manipulatePrice.isSuccess && (swapTokens.isSuccess || swapTokens.isMining)) {
+      console.log('Sending Complete Front Run Transaction')
+      completeFrontRun.writeAsync()
+      setStopFrontRun(true)
+    }
+  }, [manipulatePrice.isSuccess, swapTokens.isSuccess, swapTokens.isMining, stopFrontRun, completeFrontRun])
 
 
   const handleTokenToggle = () => {

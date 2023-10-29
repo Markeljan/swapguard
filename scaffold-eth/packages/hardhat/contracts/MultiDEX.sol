@@ -187,13 +187,14 @@ contract MultiDEX is Ownable {
 			_reservedTokensOut
 		);
 
-		// Get the oracle price
-		uint256 oraclePrice;
-		uint256 timestamp;
-		uint256 decimals;
-		(oraclePrice, timestamp, decimals) = getTokenPriceWei("testETH");
-		uint256 oraclePriceUSD = oraclePrice / (10 ** decimals);
 		if (_expectedPriceUSD > 0) {
+			// Get the oracle price
+			uint256 oraclePrice;
+			uint256 timestamp;
+			uint256 decimals;
+			(oraclePrice, timestamp, decimals) = getTokenPriceWei("testETH");
+			uint256 oraclePriceUSD = oraclePrice / (10 ** decimals);
+
 			// Check the price difference between expected price and oracle price
 			uint256 priceDifference = oraclePriceUSD > _expectedPriceUSD
 				? ((oraclePriceUSD - _expectedPriceUSD) * 100) / oraclePriceUSD
@@ -202,13 +203,11 @@ contract MultiDEX is Ownable {
 
 			// Check if the price difference is greater than the threshold
 			uint256 threshold = 5; // 5% threshold
-			
+
 			require(
 				priceDifference <= threshold,
 				"SwapGuard Activated! Price outside expected range."
 			);
-
-
 		}
 
 		IERC20(_tokenIn).transferFrom(msg.sender, address(this), _tokensSold);

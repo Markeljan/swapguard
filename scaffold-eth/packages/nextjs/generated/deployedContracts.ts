@@ -5,7 +5,7 @@ const contracts = {
       name: "coston2",
       contracts: {
         FrontRunner: {
-          address: "0x276C6D6870eE4F0cBDff139D0c6615C2B02A0A9E",
+          address: "0x1B7e5608A0E2044a9254673a0834bbbb0d0D3680",
           abi: [
             {
               inputs: [
@@ -90,7 +90,7 @@ const contracts = {
           ],
         },
         MultiDEX: {
-          address: "0x9B9B4cCCBA78109A30c771DeD0eb9ACcc798E56b",
+          address: "0x95A6d3e73Dd00Af09A3CC3aA77b2ebC140f80716",
           abi: [
             {
               inputs: [],
@@ -393,7 +393,7 @@ const contracts = {
           ],
         },
         USDC: {
-          address: "0x133F17ADA0999E0504361Bfff78611f9ceAcC257",
+          address: "0xE38b9b20B5ff326AFA16284cA028cb5627B60722",
           abi: [
             {
               inputs: [],
@@ -743,7 +743,7 @@ const contracts = {
           ],
         },
         WETH: {
-          address: "0xc26D2E1af55447D9ABfA59AE97f13Feca6eACBab",
+          address: "0xDbCae8192036b8e52614899fd176F2804b01278C",
           abi: [
             {
               inputs: [],

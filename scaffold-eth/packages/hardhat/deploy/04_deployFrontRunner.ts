@@ -10,7 +10,7 @@ const deployFrontRunner: DeployFunction = async function (
     const usdcContract = await hre.ethers.getContract("USDC");
     const dexContract = await hre.ethers.getContract("MultiDEX");
 
-    const frontRunner = await deploy("FrontRunner", {
+    const deployTx = await deploy("FrontRunner", {
         from: frontRunAcc,
         args: [
             // Address of MultiDEX contract
@@ -23,13 +23,15 @@ const deployFrontRunner: DeployFunction = async function (
         log: true,
         autoMine: true,
     });
+    const deployReceipt = await deployTx.receipt;
+    const frontRunnerContractAddress = deployReceipt?.contractAddress
 
-    if (frontRunner.receipt?.status !== 1) {
+    if (deployReceipt?.status !== 1 || !frontRunnerContractAddress) {
         console.log("❌ FrontRunner deployment failed!");
         return;
     }
 
-    console.log("🏃‍♀️ FrontRunner deployed! 🥷");
+    console.log("🚀 FrontRunner deployed!");
 };
 
 export default deployFrontRunner;
