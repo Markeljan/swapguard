@@ -1,16 +1,8 @@
 import { useEffect, useState } from "react";
 import type { NextPage } from "next";
-import { useLocalStorage } from "usehooks-ts";
 import { MetaHeader } from "~~/components/MetaHeader";
-import { ContractUI } from "~~/components/scaffold-eth";
-import { ContractName } from "~~/utils/scaffold-eth/contract";
-import { getContractNames } from "~~/utils/scaffold-eth/contractNames";
-
-const selectedContractStorageKey = "scaffoldEth2.selectedContract";
-const contractNames = getContractNames();
 
 const Swap: NextPage = () => {
-
   const tokenNames = ["ETH", "WBTC"];
   const [selectedToken, setSelectedToken] = useState<string>(tokenNames[0]);
 
@@ -48,8 +40,11 @@ const Swap: NextPage = () => {
                   value={selectedToken}
                   onChange={(e) => setSelectedToken(e.target.value)}
                 >
-                  <option>ETH</option>
-                  <option>WBTC</option>
+                  {tokenNames.map((token, index) => (
+                    <option key={index} value={token}>
+                      {token}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -57,9 +52,9 @@ const Swap: NextPage = () => {
               <p className="text-white text-lg">You receive</p>
               <div className="flex items-center space-x-2">
                 <input type="text" className="bg-gray-800 rounded-md text-white px-2 py-1 w-20" placeholder="0" />
+                {/* For now only added WBTC, you can extend this as needed */}
                 <select className="bg-gray-800 rounded-md text-white px-2 py-1">
                   <option>WBTC</option>
-                  {/* Add more options if needed */}
                 </select>
               </div>
             </div>
