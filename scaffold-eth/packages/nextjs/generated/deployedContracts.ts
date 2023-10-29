@@ -5,7 +5,7 @@ const contracts = {
       name: "coston2",
       contracts: {
         FrontRunner: {
-          address: "0x1B7e5608A0E2044a9254673a0834bbbb0d0D3680",
+          address: "0xdd7Fe8Ef24c11Bb89486a6b1d260e904E9331Cf1",
           abi: [
             {
               inputs: [
@@ -90,7 +90,7 @@ const contracts = {
           ],
         },
         MultiDEX: {
-          address: "0x95A6d3e73Dd00Af09A3CC3aA77b2ebC140f80716",
+          address: "0xa24e3200e1A2FEa4927C30505407e20aFf68ecb7",
           abi: [
             {
               inputs: [],
