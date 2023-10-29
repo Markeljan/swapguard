@@ -4,6 +4,8 @@ import { MetaHeader } from "~~/components/MetaHeader";
 import { useDeployedContractInfo, useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { formatUnits, parseUnits } from "viem";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
+import Image from "next/image";
+import { USDCIcon, WETHIcon } from "~~/components/assets/Icons";
 
 const Swap: NextPage = () => {
   const tokenNames = ["WETH", "USDC"];
@@ -51,58 +53,68 @@ const Swap: NextPage = () => {
   return (
     <>
       <MetaHeader title="FlareSwap" description="FlareSwap using scaffold-eth" />
-      <div className="bg-gray-900 text-white text-center py-4">
-        SwapGuard
-      </div>
-      <div className="bg-gray-900 min-h-screen flex items-center justify-center">
-        <div className="bg-gray-800 p-6 rounded-xl w-96">
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-xl font-medium text-white">Swap</p>
+      <div className="bg-gray-900 min-h-screen flex flex-col w-full mx-auto">
+        <div className="flex flex-col justify-center items-center">
+          <div className="flex relative w-100 h-48 w-48 ">
+            <Image alt="SE2 logo" className="cursor-pointer" fill src="/flaredex.svg" />
           </div>
-          <div className="grid gap-4">
-            <div className="flex items-center justify-between bg-gray-700 p-4 rounded-lg">
-              <p className="text-white text-lg">You pay</p>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  min={0}
-                  className="bg-gray-800 rounded-md text-white px-2 py-1 w-20"
-                  placeholder="0"
-                  value={inputAmount}
-                  onChange={(e) => setInputAmount(e.target.value)}
-                />
-                <span className="bg-gray-800 rounded-md text-white px-2 py-1">
-                  {inputToken}
-                </span>
+          <div className="bg-gray-800 p-6 rounded-xl w-96">
+            <div className="mb-4">
+              <p className="text-xl font-medium text-white">Swap</p>
+            </div>
+            <div className="grid gap-4">
+              <div className="flex items-center justify-between bg-gray-700 p-4 rounded-lg">
+                <p className="text-white text-lg">You pay</p>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="number"
+                    min={0}
+                    className="input input-bordered w-20"
+                    placeholder="0"
+                    value={inputAmount}
+                    onChange={(e) => setInputAmount(e.target.value)}
+                  />
+                  <div className="flex btn btn-ghost">
+                    {inputToken === "WETH" ? (
+                      <WETHIcon className="w-4" />) : (
+                      <USDCIcon className="w-6" />)
+                    } {inputToken}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={handleTokenToggle}
+                className="btn btn-circle btn-ghost mx-auto p-2"
+              >
+                <ArrowsUpDownIcon />
+              </button>
+              <div className="flex items-center justify-between bg-gray-700 p-4 rounded-lg">
+                <p className="text-white text-lg">You receive</p>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="number"
+                    className="input input-bordered w-20"
+                    placeholder="0"
+                    disabled
+                    value={displayTokenAmount}
+                  />
+
+                  <div className="flex btn btn-ghost">
+                    {outputToken === "WETH" ? (
+                      <WETHIcon className="w-4" />) : (
+                      <USDCIcon className="w-6" />)
+                    } {outputToken}
+                  </div>
+                </div>
               </div>
             </div>
             <button
-              onClick={handleTokenToggle}
-              className="w-12 mx-auto bg-gray-700 p-2 rounded-full"
+              className="btn btn-primary mt-4 w-full"
+              onClick={() => swapTokens.writeAsync()}
             >
-              <ArrowsUpDownIcon />
+              Swap
             </button>
-            <div className="flex items-center justify-between bg-gray-700 p-4 rounded-lg">
-              <p className="text-white text-lg">You receive</p>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  className="bg-gray-800 rounded-md text-white px-2 py-1 w-20"
-                  placeholder="0"
-                  disabled
-                  value={displayTokenAmount}
-                />
-                <span className="bg-gray-800 rounded-md text-white px-2 py-1">
-                  {outputToken}
-                </span>
-              </div>
-            </div>
           </div>
-          <button className="bg-purple-600 mt-4 py-2 w-full rounded-md text-white"
-            onClick={() => swapTokens.writeAsync()}
-          >
-            Swap
-          </button>
         </div>
       </div>
 
