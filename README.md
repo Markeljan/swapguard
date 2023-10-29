@@ -6,4 +6,4 @@ price-protected trading on flare network
 
 **How it works**
 
-![Alt text](/scaffold-eth/packages/nextjs/public/readme/sponsors.svg)
+![Alt text](/scaffold-eth/packages/nextjs/public/readme/diagram.svg)
