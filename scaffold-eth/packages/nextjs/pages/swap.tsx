@@ -3,6 +3,12 @@ import type { NextPage } from "next";
 import { useLocalStorage } from "usehooks-ts";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { useDeployedContractInfo, useNetworkColor, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { ContractName } from "~~/utils/scaffold-eth/contract";
+import { getContractNames } from "~~/utils/scaffold-eth/contractNames";
+import Image from "next/image";
+
+const selectedContractStorageKey = "scaffoldEth2.selectedContract";
+const contractNames = getContractNames();
 
 
 const Swap: NextPage = () => {
@@ -22,6 +28,11 @@ const Swap: NextPage = () => {
 
   console.log("scaffoldRead", scaffoldRead.data);
 
+  const [selectedContract, setSelectedContract] = useLocalStorage<ContractName>(
+    selectedContractStorageKey,
+    contractNames[0],
+  );
+
   useEffect(() => {
     if (!contractNames.includes(selectedContract)) {
       setSelectedContract(contractNames[0]);
@@ -33,10 +44,14 @@ const Swap: NextPage = () => {
         title="FlareSwap"
         description="FlareSwap using scaffold-eth"
       />
-      <div className="bg-gray-900 text-white text-center py-4">
-        Swap Interface | Your DEX Name
+      <div className="bg-gray-900 text-white text-center py-">
+      <div className="flex relative w-100 h-48">
+            <Image alt="SE2 logo" className="cursor-pointer" fill src="/flaredex.svg" />
+          </div>
       </div>
-      <div className="bg-gray-900 min-h-screen flex items-center justify-center">
+
+      
+      <div className="bg-gray-900 h-screen flex items-center justify-center">
         <div className="bg-gray-800 p-6 rounded-xl w-96">
           <div className="flex justify-between items-center mb-4">
             <p className="text-xl font-medium text-white">Swap</p>
@@ -78,6 +93,7 @@ const Swap: NextPage = () => {
             Swap
           </button>
         </div>
+        
       </div>
 
 
