@@ -25,26 +25,36 @@ const Swap: NextPage = () => {
     functionName: "calculateTokenAmount",
     args: [inputAddress, outputAddress, formattedInputAmount],
   });
+  const displayTokenAmount = useMemo(() => {
+    if (!calculateTokenAmount.data) return "";
+    return formatUnits(calculateTokenAmount.data.toString(), 18);
+  }
+    , [calculateTokenAmount.data]);
 
-  console.log("scaffoldRead", scaffoldRead.data);
+  const swapTokens = useScaffoldContractWrite({
+    contractName: "MultiDEX",
+    functionName: "swapTokenToToken",
+    args: [inputAddress, outputAddress, formattedInputAmount],
+  });
 
-  useEffect(() => {
-    if (!contractNames.includes(selectedContract)) {
-      setSelectedContract(contractNames[0]);
-    }
-  }, [selectedContract, setSelectedContract]);
+
+
+
+
+  console.log("scaffoldRead", calculateTokenAmount.data);
+
+  const handleTokenToggle = () => {
+    setInputToken((prevToken) => (prevToken === "WETH" ? "USDC" : "WETH"));
+    setOutputToken((prevToken) => (prevToken === "WETH" ? "USDC" : "WETH"));
+  };
+
   return (
     <>
-      <MetaHeader
-        title="FlareSwap"
-        description="FlareSwap using scaffold-eth"
-      />
+      <MetaHeader title="FlareSwap" description="FlareSwap using scaffold-eth" />
       <div className="bg-gray-900 text-white text-center py-4">
-        Swap Interface | Your DEX Name
+        SwapGuard
       </div>
-
-      
-      <div className="bg-gray-900 h-screen flex items-center justify-center">
+      <div className="bg-gray-900 min-h-screen flex items-center justify-center">
         <div className="bg-gray-800 p-6 rounded-xl w-96">
           <div className="flex justify-between items-center mb-4">
             <p className="text-xl font-medium text-white">Swap</p>
@@ -94,7 +104,6 @@ const Swap: NextPage = () => {
             Swap
           </button>
         </div>
-        
       </div>
 
       <div className="text-center mt-8 bg-secondary p-10">
