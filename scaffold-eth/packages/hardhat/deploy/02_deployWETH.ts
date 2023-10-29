@@ -11,6 +11,7 @@ const contractName = "WETH";
  * @param hre HardhatRuntimeEnvironment object.
  */
 const deployContract: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  return;
 
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
