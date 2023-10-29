@@ -4,8 +4,93 @@ const contracts = {
       chainId: "114",
       name: "coston2",
       contracts: {
+        FrontRunner: {
+          address: "0x276C6D6870eE4F0cBDff139D0c6615C2B02A0A9E",
+          abi: [
+            {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "_multiDex",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "_tokenA",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "_tokenB",
+                  type: "address",
+                },
+              ],
+              stateMutability: "nonpayable",
+              type: "constructor",
+            },
+            {
+              inputs: [],
+              name: "completeFrontRun",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "uint256",
+                  name: "_amountA",
+                  type: "uint256",
+                },
+              ],
+              name: "manipulatePrice",
+              outputs: [],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "multiDex",
+              outputs: [
+                {
+                  internalType: "contract IMultiDEX",
+                  name: "",
+                  type: "address",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "tokenA",
+              outputs: [
+                {
+                  internalType: "contract IERC20",
+                  name: "",
+                  type: "address",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [],
+              name: "tokenB",
+              outputs: [
+                {
+                  internalType: "contract IERC20",
+                  name: "",
+                  type: "address",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+          ],
+        },
         MultiDEX: {
-          address: "0x12B5aB083176b6eBaF0F15d85F063bE5a8951479",
+          address: "0x9B9B4cCCBA78109A30c771DeD0eb9ACcc798E56b",
           abi: [
             {
               inputs: [],
@@ -133,6 +218,35 @@ const contracts = {
             {
               inputs: [
                 {
+                  internalType: "string",
+                  name: "_symbol",
+                  type: "string",
+                },
+              ],
+              name: "getTokenPriceWei",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "_price",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "_timestamp",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "_decimals",
+                  type: "uint256",
+                },
+              ],
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
                   internalType: "address",
                   name: "_token",
                   type: "address",
@@ -226,6 +340,11 @@ const contracts = {
                 {
                   internalType: "uint256",
                   name: "_tokensSold",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "_expectedPriceUSD",
                   type: "uint256",
                 },
               ],

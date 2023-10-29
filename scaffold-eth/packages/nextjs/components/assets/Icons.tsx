@@ -7,7 +7,7 @@ export const USDCIcon = (props: React.SVGProps<SVGSVGElement>) => (
 )
 
 export const WETHIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg className={props?.className} xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" version="1.1" shape-rendering="geometricPrecision" textRendering="geometricPrecision" imageRendering="optimizeQuality" fillRule="evenodd" clip-rule="evenodd" viewBox="0 0 784.37 1277.39">
+    <svg className={props?.className} xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" version="1.1" shapeRendering="geometricPrecision" textRendering="geometricPrecision" imageRendering="optimizeQuality" fillRule="evenodd" clipRule="evenodd" viewBox="0 0 784.37 1277.39">
         <g id="Layer_x0020_1">
             <metadata id="CorelCorpID_0Corel-Layer" />
             <g id="_1421394342400">

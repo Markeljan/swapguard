@@ -9,3 +9,5 @@ node_modules/
 **/*.png
 **/*.svg
 **/generated/**/*
+
+.env

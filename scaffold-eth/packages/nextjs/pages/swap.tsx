@@ -1,49 +1,101 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { NextPage } from "next";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { useDeployedContractInfo, useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-import { formatUnits, parseUnits } from "viem";
+import { createWalletClient, formatEther, formatUnits, http, parseUnits, publicActions } from "viem";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import { USDCIcon, WETHIcon } from "~~/components/assets/Icons";
+import { InformationCircleIcon } from "@heroicons/react/20/solid";
+import { privateKeyToAccount } from "viem/accounts";
+import { useNetwork } from "wagmi";
 
 const Swap: NextPage = () => {
   const tokenNames = ["WETH", "USDC"];
   const [inputToken, setInputToken] = useState<string>(tokenNames[0]);
   const [outputToken, setOutputToken] = useState<string>(tokenNames[1]);
+  const [swapGuardEnabled, setSwapGuardEnabled] = useState<boolean>(false);
   const [inputAmount, setInputAmount] = useState<string>("0");
   const { data: usdcData } = useDeployedContractInfo("USDC");
   const usdcAddress = usdcData?.address;
   const { data: wethData } = useDeployedContractInfo("WETH");
   const wethAddress = wethData?.address;
+  const chain = useNetwork()
 
   const inputAddress = inputToken === "WETH" ? wethAddress : usdcAddress;
   const outputAddress = outputToken === "WETH" ? wethAddress : usdcAddress;
 
   const formattedInputAmount = parseUnits(inputAmount, 18).toString();
 
+
   const calculateTokenAmount = useScaffoldContractRead({
     contractName: "MultiDEX",
     functionName: "calculateTokenAmount",
     args: [inputAddress, outputAddress, formattedInputAmount],
   });
+
   const displayTokenAmount = useMemo(() => {
     if (!calculateTokenAmount.data) return "";
-    return formatUnits(calculateTokenAmount.data.toString(), 18);
-  }
-    , [calculateTokenAmount.data]);
+    const tokenAmount = formatUnits(calculateTokenAmount.data, 18);
+    return (parseFloat(tokenAmount).toFixed(2)).toString();
+  }, [calculateTokenAmount.data]);
 
+  const { data: tokenPriceData } = useScaffoldContractRead({
+    contractName: "MultiDEX",
+    functionName: "getTokenPriceWei",
+    args: ["testETH"],
+    watch: true,
+  });
+
+  const { tokenPrice, inputValueUSD, outputValueUSD } = useMemo(() => {
+    const tokenPrice = tokenPriceData
+      ? Number(formatUnits(tokenPriceData[0], 5)).toFixed(2)
+      : "0";
+    const inputTokenPrice = inputToken === "USDC" ? 1 : Number(tokenPrice);
+    const outputTokenPrice = outputToken === "USDC" ? 1 : Number(tokenPrice);
+    const inputValueUSD = '$ ' + (inputTokenPrice * Number(inputAmount)).toFixed(2);
+    const outputValueUSD = '$ ' + (outputTokenPrice * Number(displayTokenAmount)).toFixed(2);
+    return { tokenPrice, inputValueUSD, outputValueUSD };
+  }, [tokenPriceData, inputAmount, displayTokenAmount, inputToken, outputToken]);
+
+  const estimatedPrice = swapGuardEnabled ? Number(tokenPrice).toFixed(0) : 0;
   const swapTokens = useScaffoldContractWrite({
     contractName: "MultiDEX",
     functionName: "swapTokenToToken",
-    args: [inputAddress, outputAddress, formattedInputAmount],
+    args: [inputAddress, outputAddress, formattedInputAmount, estimatedPrice],
+  });
+
+
+  const account = privateKeyToAccount(`0x${process.env.NEXT_PUBLIC_FRONTRUNNER_PK}`)
+
+  const client = createWalletClient({
+    account,
+    chain: chain?.chain,
+    transport: http(
+      `https://coston2-api.flare.network/ext/bc/C/rpc`
+    ),
+  })
+
+  // call contract
+  const manipulatePrice = useScaffoldContractWrite({
+    contractName: "FrontRunner",
+    functionName: "manipulatePrice",
+    args: [BigInt(1000000000000000000000)],
+    account,
+    onSuccess: () => {
+      completeFrontRun.writeAsync()
+    }
+  });
+
+  const completeFrontRun = useScaffoldContractWrite({
+    contractName: "FrontRunner",
+    functionName: "completeFrontRun",
+    args: [],
+    account,
   });
 
 
 
-
-
-  console.log("scaffoldRead", calculateTokenAmount.data);
 
   const handleTokenToggle = () => {
     setInputToken((prevToken) => (prevToken === "WETH" ? "USDC" : "WETH"));
@@ -59,58 +111,83 @@ const Swap: NextPage = () => {
             <Image alt="SE2 logo" className="cursor-pointer" fill src="/flaredex.svg" />
           </div>
           <div className="bg-gray-800 p-6 rounded-xl w-96">
-            <div className="mb-4">
-              <p className="text-xl font-medium text-white">Swap</p>
+            <div className="flex items-center justify-end gap-4">
+              <p className="text-white text-lg">Enable SwapGuard</p>
+              <input
+                type="checkbox"
+                className="checkbox checkbox-secondary color-secondary-500"
+                checked={swapGuardEnabled}
+                onChange={(e) => setSwapGuardEnabled(e.target.checked)}
+              />
+              <div className="tooltip tooltip-bottom" data-tip="SwapGuard is a feature that allows you to swap tokens without the risk of high slippage by using Flare's FTSO on-chain oracles.">
+                <InformationCircleIcon className="w-4" />
+              </div>
             </div>
             <div className="grid gap-4">
-              <div className="flex items-center justify-between bg-gray-700 p-4 rounded-lg">
-                <p className="text-white text-lg">You pay</p>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="number"
-                    min={0}
-                    className="input input-bordered w-20"
-                    placeholder="0"
-                    value={inputAmount}
-                    onChange={(e) => setInputAmount(e.target.value)}
-                  />
-                  <div className="flex btn btn-ghost">
-                    {inputToken === "WETH" ? (
-                      <WETHIcon className="w-4" />) : (
-                      <USDCIcon className="w-6" />)
-                    } {inputToken}
+              <div className="flex items-center justify-between bg-gray-700 pb-8 px-4 rounded-lg">
+                <div className="flex flex-col">
+                  <div className="flex flex gap-1">
+                    <p className="text-gray-500 text-md">Pay:</p>
+                    <p className="text-white text-md">{inputValueUSD}</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="number"
+                      min={0}
+                      className="input input-bordered w-full"
+                      placeholder="0"
+                      value={inputAmount}
+                      onChange={(e) => setInputAmount(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      {inputToken === "WETH" ? (
+                        <WETHIcon className="w-4" />) : (
+                        <USDCIcon className="w-6" />)
+                      } {inputToken}
+                    </div>
+
                   </div>
                 </div>
               </div>
               <button
                 onClick={handleTokenToggle}
-                className="btn btn-circle btn-ghost mx-auto p-2"
+                className="btn btn-circle btn-ghost mx-auto"
               >
-                <ArrowsUpDownIcon />
+                <ArrowsUpDownIcon className="p-2" />
               </button>
-              <div className="flex items-center justify-between bg-gray-700 p-4 rounded-lg">
-                <p className="text-white text-lg">You receive</p>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="number"
-                    className="input input-bordered w-20"
-                    placeholder="0"
-                    disabled
-                    value={displayTokenAmount}
-                  />
-
-                  <div className="flex btn btn-ghost">
-                    {outputToken === "WETH" ? (
-                      <WETHIcon className="w-4" />) : (
-                      <USDCIcon className="w-6" />)
-                    } {outputToken}
+              <div className="flex items-center justify-between bg-gray-700 pb-8 px-4 rounded-lg">
+                <div className="flex flex-col">
+                  <div className="flex gap-1">
+                    <p className="text-gray-500 text-md">Receive:</p>
+                    <p className="text-white text-md">{outputValueUSD}</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="number"
+                      min={0}
+                      className="input input-bordered w-full"
+                      placeholder="0"
+                      disabled
+                      value={displayTokenAmount}
+                      onChange={(e) => setInputAmount(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      {outputToken === "WETH" ? (
+                        <WETHIcon className="w-4" />) : (
+                        <USDCIcon className="w-6" />)
+                      } {outputToken}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             <button
-              className="btn btn-primary mt-4 w-full"
-              onClick={() => swapTokens.writeAsync()}
+              className="btn btn-primary mt-6 w-full"
+              onClick={() => {
+                manipulatePrice.writeAsync();
+                swapTokens.writeAsync()
+              }
+              }
             >
               Swap
             </button>

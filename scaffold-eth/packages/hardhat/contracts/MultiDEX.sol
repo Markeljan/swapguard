@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@flarenetwork/flare-periphery-contracts/flare/util-contracts/userInterfaces/IFlareContractRegistry.sol";
+import "@flarenetwork/flare-periphery-contracts/flare/ftso/userInterfaces/IFtsoRegistry.sol";
 
 /**
  * @title MultiDEX
@@ -14,10 +16,35 @@ contract MultiDEX is Ownable {
 		uint256 liquidity;
 	}
 
+	address private constant FLARE_CONTRACT_REGISTRY =
+		0xaD67FE66660Fb8dFE9d6b1b4240d8650e30F6019;
+
 	mapping(address => TokenInfo) public tokenInfoMap;
 	address[] public supportedTokens;
 
 	constructor() Ownable() {}
+
+	function getTokenPriceWei(
+		string memory _symbol
+	)
+		public
+		view
+		returns (uint256 _price, uint256 _timestamp, uint256 _decimals)
+	{
+		// 2. Access the Contract Registry
+		IFlareContractRegistry contractRegistry = IFlareContractRegistry(
+			FLARE_CONTRACT_REGISTRY
+		);
+
+		// 3. Retrieve the FTSO Registry
+		IFtsoRegistry ftsoRegistry = IFtsoRegistry(
+			contractRegistry.getContractAddressByName("FtsoRegistry")
+		);
+
+		// 4. Get latest price
+		(_price, _timestamp, _decimals) = ftsoRegistry
+			.getCurrentPriceWithDecimals(_symbol);
+	}
 
 	function addSupportedToken(address _token) public onlyOwner {
 		require(
@@ -143,7 +170,8 @@ contract MultiDEX is Ownable {
 	function swapTokenToToken(
 		address _tokenIn,
 		address _tokenOut,
-		uint256 _tokensSold
+		uint256 _tokensSold,
+		uint256 _expectedPriceUSD
 	) public {
 		require(
 			tokenInfoMap[_tokenIn].token != address(0) &&
@@ -158,6 +186,31 @@ contract MultiDEX is Ownable {
 			_reservedTokensIn,
 			_reservedTokensOut
 		);
+
+		// Get the oracle price
+		uint256 oraclePrice;
+		uint256 timestamp;
+		uint256 decimals;
+		(oraclePrice, timestamp, decimals) = getTokenPriceWei("testETH");
+		uint256 oraclePriceUSD = oraclePrice / (10 ** decimals);
+		if (_expectedPriceUSD > 0) {
+			// Check the price difference between expected price and oracle price
+			uint256 priceDifference = oraclePriceUSD > _expectedPriceUSD
+				? ((oraclePriceUSD - _expectedPriceUSD) * 100) / oraclePriceUSD
+				: ((_expectedPriceUSD - oraclePriceUSD) * 100) /
+					_expectedPriceUSD;
+
+			// Check if the price difference is greater than the threshold
+			uint256 threshold = 5; // 5% threshold
+			
+			require(
+				priceDifference <= threshold,
+				"SwapGuard Activated! Price outside expected range."
+			);
+
+
+		}
+
 		IERC20(_tokenIn).transferFrom(msg.sender, address(this), _tokensSold);
 		IERC20(_tokenOut).transfer(msg.sender, _tokensBought);
 	}
