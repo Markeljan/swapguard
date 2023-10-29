@@ -1,14 +1,14 @@
 const main = async function () {
   const hre = require("hardhat");
 
-  const { deployer } = await hre.getNamedAccounts();
+  const { deployer, frontRunAcc } = await hre.getNamedAccounts();
   const wethContract = await hre.ethers.getContract("WETH");
   const usdcContract = await hre.ethers.getContract("USDC");
   const dexContract = await hre.ethers.getContract("MultiDEX");
 
   // Mint tokens
-  const wethMintAmount = hre.ethers.utils.parseEther('100000');
-  const usdcMintAmount = hre.ethers.utils.parseEther('177500000');
+  const wethMintAmount = hre.ethers.utils.parseEther('1000');
+  const usdcMintAmount = hre.ethers.utils.parseEther('1775000');
 
   // Mint tokens
   await wethContract.mint(deployer, wethMintAmount);
@@ -39,6 +39,12 @@ const main = async function () {
   } catch (e) {
     console.log(e);
   }
+
+  // Approve tokens for FrontRunner
+  await wethContract.approve(frontRunAcc, hre.ethers.constants.MaxUint256);
+  console.log("🥷 Approved WETH tokens for FrontRunner");
+  await usdcContract.approve(frontRunAcc, hre.ethers.constants.MaxUint256);
+  console.log("🏃‍♀️ Approved USDC tokens for FrontRunner");
 };
 
 main().catch(error => {

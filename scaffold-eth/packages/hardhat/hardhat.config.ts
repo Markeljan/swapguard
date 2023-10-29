@@ -1,6 +1,8 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 import { HardhatUserConfig, task } from "hardhat/config";
+// @ts-ignore
+import "./tasks/frontRunAttack";
 import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-deploy";
 import "@matterlabs/hardhat-zksync-solc";
@@ -12,10 +14,14 @@ const providerApiKey = process.env.ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr2
 // If not set, it uses the hardhat account 0 private key.
 const deployerPrivateKey =
   process.env.DEPLOYER_PRIVATE_KEY ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+const frontRunnerPrivateKey =
+  process.env.FRONTRUNNER_PRIVATE_KEY ?? "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 // If not set, it uses ours Etherscan default API key.
 const etherscanApiKey = process.env.ETHERSCAN_API_KEY || "DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW";
 
 import { TASK_COMPILE } from 'hardhat/builtin-tasks/task-names';
+
+task("frontRunAttack", "Execute a front-running attack")
 
 // Override solc compile task and filter out useless warnings
 task(TASK_COMPILE)
@@ -91,6 +97,9 @@ const config: HardhatUserConfig = {
       // By default, it will take the first Hardhat account as the deployer
       default: 0,
     },
+    frontRunAcc: {
+      default: 1,
+    },
   },
   networks: {
     // View the networks that are pre-configured.
@@ -103,11 +112,11 @@ const config: HardhatUserConfig = {
     },
     goerli: {
       url: `https://eth-goerli.alchemyapi.io/v2/${providerApiKey}`,
-      accounts: [deployerPrivateKey],
+      accounts: [deployerPrivateKey, frontRunnerPrivateKey],
     },
     coston: {
       url: "https://coston-api.flare.network/ext/bc/C/rpc",
-      accounts: [deployerPrivateKey],
+      accounts: [deployerPrivateKey, frontRunnerPrivateKey],
       chainId: 16,
       verifyURL: "https://coston-explorer.flare.network",
       verify: {
@@ -119,7 +128,7 @@ const config: HardhatUserConfig = {
     },
     coston2: {
       url: "https://coston2-api.flare.network/ext/bc/C/rpc",
-      accounts: [deployerPrivateKey],
+      accounts: [deployerPrivateKey, frontRunnerPrivateKey],
       chainId: 114,
       verifyURL: "https://coston2-explorer.flare.network",
       verify: {
@@ -131,7 +140,7 @@ const config: HardhatUserConfig = {
     },
     flare: {
       url: "https://flare-api.flare.network/ext/C/rpc",
-      accounts: [deployerPrivateKey],
+      accounts: [deployerPrivateKey, frontRunnerPrivateKey],
       chainId: 14,
       verifyURL: "https://flare-explorer.flare.network",
       verify: {

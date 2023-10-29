@@ -5,3 +5,4 @@ foundry/out
 foundry/lib/forge-std
 foundry/cache
 foundry/broadcast
+scaffold-eth/packages/nextjs/.env
