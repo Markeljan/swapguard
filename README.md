@@ -1,0 +1,1 @@
+![Alt text](/scaffold-eth/packages/nextjs/public/swapguard.svg)
