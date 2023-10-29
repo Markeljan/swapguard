@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @title MultiDEX
  * @dev A multi-token decentralized exchange (DEX) contract.
  */
-contract MultiDEX is Ownable {
+contract MultiDEXold is Ownable {
     struct TokenInfo {
         address token;
         uint256 liquidity;

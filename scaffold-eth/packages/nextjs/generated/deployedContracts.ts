@@ -5,7 +5,7 @@ const contracts = {
       name: "coston2",
       contracts: {
         MultiDEX: {
-          address: "0x9636feB73C1f92D7524ba56B739bbd329fe74B24",
+          address: "0x12B5aB083176b6eBaF0F15d85F063bE5a8951479",
           abi: [
             {
               inputs: [],
@@ -70,6 +70,35 @@ const contracts = {
               name: "addSupportedToken",
               outputs: [],
               stateMutability: "nonpayable",
+              type: "function",
+            },
+            {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "tokenIn",
+                  type: "address",
+                },
+                {
+                  internalType: "address",
+                  name: "tokenOut",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "tokensSold",
+                  type: "uint256",
+                },
+              ],
+              name: "calculateTokenAmount",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256",
+                },
+              ],
+              stateMutability: "view",
               type: "function",
             },
             {
@@ -244,8 +273,8 @@ const contracts = {
             },
           ],
         },
-        WETH: {
-          address: "0xE1842E54D5F2D6E230Ee09c68366F2cE395A8849",
+        USDC: {
+          address: "0x133F17ADA0999E0504361Bfff78611f9ceAcC257",
           abi: [
             {
               inputs: [],
@@ -594,8 +623,8 @@ const contracts = {
             },
           ],
         },
-        WFLR: {
-          address: "0x1f25b15BEaA0a4eD13010E9c5d72eaB4f95Cc074",
+        WETH: {
+          address: "0xc26D2E1af55447D9ABfA59AE97f13Feca6eACBab",
           abi: [
             {
               inputs: [],

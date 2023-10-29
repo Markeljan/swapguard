@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 
 
-const contractName = "WFLR";
+const contractName = "USDC";
 
 /**
  * Deploys a contract named "YourContract" using the deployer account and
@@ -11,6 +11,7 @@ const contractName = "WFLR";
  * @param hre HardhatRuntimeEnvironment object.
  */
 const deployContract: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  return
 
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
